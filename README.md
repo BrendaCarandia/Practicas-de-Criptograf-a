@@ -11,8 +11,8 @@ Repositorio de los códigos de la materia de Criptografía
 <h2 align="center">📌 Criptografía 📌</h2>
 
 ### **NOMBRE COMPLETO:**  
-**Carandia Lorenzo Brenda Fernanda**  
-**Cuadriello Valdés Cynthia Citlalli**</h3>
+**Carandia Lorenzo Brenda Fernanda**  </h2>
+**Cuadriello Valdés Cynthia Citlalli**</h2>
 **Cuadriello Valdés Diana Sinsuni**
  
 
@@ -22,5 +22,4 @@ Repositorio de los códigos de la materia de Criptografía
 ### **Semestre:**  
 **2026-1**  
 
-### **SEMESTRE:**  
-**2025-2**  
+ 
