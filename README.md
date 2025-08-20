@@ -13,7 +13,8 @@ Repositorio de los códigos de la materia de Criptografía
 ### **NOMBRE COMPLETO:**  
 **Carandia Lorenzo Brenda Fernanda**  <br>
 **Cuadriello Valdés Cynthia Citlalli**<br>
-**Cuadriello Valdés Diana Sinsuni**
+**Cuadriello Valdés Diana Sinsuni**<br>
+**López Sugahara Ernesto Danjiro**
  
 
 ### **GRUPO:**  
