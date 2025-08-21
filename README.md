@@ -14,6 +14,7 @@ Repositorio de los códigos de la materia de Criptografía
 **Carandia Lorenzo Brenda Fernanda**  <br>
 **Cuadriello Valdés Cynthia Citlalli**<br>
 **Cuadriello Valdés Diana Sinsuni**<br>
+**Jose Laguna Daniel** <br>
 **López Sugahara Ernesto Danjiro**
  
 
