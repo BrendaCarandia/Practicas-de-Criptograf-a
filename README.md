@@ -15,7 +15,8 @@ Repositorio de los códigos de la materia de Criptografía
 **Cuadriello Valdés Cynthia Citlalli**<br>
 **Cuadriello Valdés Diana Sinsuni**<br>
 **Jose Laguna Daniel** <br>
-**López Sugahara Ernesto Danjiro**
+**López Sugahara Ernesto Danjiro**<br>
+**Rodriguez Kobeh Santiago**
  
 
 ### **GRUPO:**  
