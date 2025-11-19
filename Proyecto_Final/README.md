@@ -187,6 +187,10 @@ venv\Scripts\activate.bat
 ```bash
 pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF cryptography
 ```
+o 
+```bash
+pip install -r requirements.txt
+```
 
 **Verificación:** 
 
