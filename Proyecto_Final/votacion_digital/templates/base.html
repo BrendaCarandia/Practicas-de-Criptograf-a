@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Enlace a nuestro archivo CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    {% if title %}
+    <title>{{ title }} - Votación Digital</title>
+    {% else %}
+    <title>Votación Digital</title>
+    {% endif %}
+</head>
+
+<body>
+    <header class="new-header">
+        <div class="header-container">
+            <div class="header-flex-row">
+                <!-- Logo -->
+                <a href="{{ url_for('home') }}" class="header-logo-link">
+                    <div class="header-logo-icon-bg">
+                        <!-- SVG para 'Vote' -->
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" class="header-logo-icon"
+                             viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 0c-.69 0-1.843.265-2.928.56-1.11.3-2.229.655-2.887.87a1.54 1.54 0 0 0-1.044 1.262c-.596 4.477.787 7.795 2.465 9.99a11.8 11.8 0 0 0 2.517 2.453c.386.273.744.482 1.048.625.28.132.581.24.829.24s.548-.108.829-.24a7 7 0 0 0 1.048-.625 11.8 11.8 0 0 0 2.517-2.453c1.678-2.195 3.061-5.513 2.465-9.99a1.54 1.54 0 0 0-1.044-1.263 63 63 0 0 0-2.887-.87C9.843.266 8.69 0 8 0m0 5a1.5 1.5 0 0 1 .5 2.915l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99A1.5 1.5 0 0 1 8 5" />
+                        </svg>
+                    </div>
+                    <span class="header-logo-text">VotoSeguro</span>
+                </a>
+
+                <!-- Navegación de Escritorio -->
+                <nav class="header-nav-desktop">
+                    <a href="{{ url_for('home') }}" class="header-nav-link">
+                        <!-- SVG para 'Home' -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                            <polyline points="9 22 9 12 15 12 15 22" />
+                        </svg>
+                        <span>Inicio</span>
+                    </a>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="header-nav-link">
+                        <!-- SVG para 'Vote' (Dashboard) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                             class="bi bi-lock" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd"
+                                d="M8 0a4 4 0 0 1 4 4v2.05a2.5 2.5 0 0 1 2 2.45v5a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 2 13.5v-5a2.5 2.5 0 0 1 2-2.45V4a4 4 0 0 1 4-4M4.5 7A1.5 1.5 0 0 0 3 8.5v5A1.5 1.5 0 0 0 4.5 15h7a1.5 1.5 0 0 0 1.5-1.5v-5A1.5 1.5 0 0 0 11.5 7zM8 1a3 3 0 0 0-3 3v2h6V4a3 3 0 0 0-3-3" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+
+                    {% endif %}
+                </nav>
+
+                <!-- Menú de Usuario (Escritorio) -->
+                <div class="header-user-menu-desktop">
+                    {% if current_user.is_authenticated %}
+                    <div class="user-info-text">
+                        <span class="user-name">{{ current_user.full_name or current_user.email }}</span>
+                        {# {% if current_user.role == 'admin' %}
+                        <span class="user-role-admin">Administrador</span>
+                        {% endif %} #}
+                    </div>
+                    <a href="{{ url_for('logout') }}" class="header-user-button-logout">
+                        <!-- SVG para 'LogOut' -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        <span>Salir</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('login') }}" class="header-user-button-login">
+                        Acceder
+                    </a>
+                    <a href="{{ url_for('register') }}" class="header-user-button-register">
+                        Registrarse
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </header>
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        <ul class="flashes">
+            {% for category, message in messages %}
+            <li class="{{ category }}">{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    <footer>
+        <div class="footer-container">
+            <div class="footer-content">
+                <p class="footer-text-main">© 2025 VotoSeguro - Sistema de Votación Digital</p>
+                <p class="footer-text-secondary">
+                    Tu voto es privado y seguro
+                </p>
+            </div>
+        </div>
+    </footer>
+    <!-- Enlace a nuestro archivo JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+
+</html>

@@ -1,0 +1,319 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Título Principal del Dashboard -->
+<h2 class="dashboard-main-title">Panel de Votación</h2>
+<p class="dashboard-subtitle">Bienvenido, {{ current_user.username }}! Aquí puedes gestionar tu participación.</p>
+
+<div class="dashboard-grid">
+
+    <!-- Tarjeta Principal: Realizar Votación -->
+    <div class="dashboard-card vote-card">
+        <h3>Realizar Votación</h3>
+        <p>Sigue los pasos para emitir tu voto de forma segura y anónima.</p>
+
+        <form id="vote-form" class="vote-form-content">
+            <div class="form-group">
+                <label for="vote_option">1. Selecciona tu opción de voto:</label>
+                <select id="vote_option" name="vote_option" class="form-control">
+                    {% for option in available_options %}
+                    <option value="{{ option }}">{{ option }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="private_key_password">2. Contraseña de tu clave privada:</label>
+                <input type="password" id="private_key_password" name="private_key_password" class="form-control"
+                    required>
+                <small>Es la misma contraseña con la que te registraste, usada para firmar tu voto.</small>
+            </div>
+            <div class="form-group">
+                <label for="user_public_key_file">3. Sube tu llave pública (.pem):</label>
+                <!-- Wrapper de input de archivo personalizado -->
+                <div class="file-input-wrapper">
+                    <input type="file" id="user_public_key_file" accept=".pem" class="file-input-hidden" required>
+                    <label for="user_public_key_file" class="file-input-label">
+                        <span id="file-name-display">Seleccionar archivo...</span>
+                    </label>
+                </div>
+                <small>Necesaria para verificar tu firma final.</small>
+            </div>
+
+            <!-- Mensaje de Estado -->
+            <div id="status-message" class="status-box" style="display: none;"></div>
+
+            <!-- Botones de Acción -->
+            <div class="vote-buttons-container">
+                <button type="button" id="request-token-btn" class="btn-dash-primary">1. Solicitar Token</button>
+                <button type="button" id="submit-vote-btn" class="btn-dash-primary" disabled>2. Enviar Voto
+                    Final</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tarjeta Secundaria: Información de Usuario -->
+    <div class="dashboard-card info-card">
+        <h3>Información de Usuario</h3>
+        <div class="info-grid">
+            <span>Usuario:</span>
+            <strong>{{ current_user.username }}</strong>
+
+            <span>ID de Usuario:</span>
+            <strong>{{ current_user.id }}</strong>
+
+            <span>Tipo de Usuario:</span>
+            <strong>{{ current_user.user_type }}</strong>
+        </div>
+        <hr class="card-divider">
+        <h4>Gestión de Clave</h4>
+        <p>Tu clave pública fue generada y almacenada. Puedes descargarla si la perdiste.</p>
+        <a href="{{ url_for('download_public_key', user_id=current_user.id) }}" class="btn-dash-secondary">
+            <!-- SVG para 'Descargar' -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Descargar mi Clave Pública
+        </a>
+    </div>
+
+    <!-- Tarjeta Ancha: Mis Votaciones Realizadas -->
+    <div class="dashboard-card full-width-card">
+        <h3>Mis Votaciones Realizadas</h3>
+        {% if user_votes %}
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Opción Votada</th>
+                        <th>Fecha/Hora</th>
+                        <th>Firma del Voto (extracto)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vote in user_votes %}
+                    <tr>
+                        <td data-label="Opción">{{ vote.vote_option }}</td>
+                        <td data-label="Fecha">{{ vote.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td data-label="Firma" class="signature-cell">{{ vote.signature[:50] }}...</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Aún no has emitido ningún voto.</p>
+        {% endif %}
+    </div>
+
+    <!-- Tarjeta Ancha: Tokens Pendientes -->
+    <div class="dashboard-card full-width-card">
+        <h3>Tokens de Firma Ciega Pendientes</h3>
+        {% if pending_tokens %}
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Hash del Mensaje</th>
+                        <th>Token (extracto)</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for token in pending_tokens %}
+                    <tr>
+                        <td data-label="Hash" class="signature-cell">{{ token.message_hash[:20] }}...</td>
+                        <td data-label="Token" class="signature-cell">{{ token.signature_token[:20] }}...</td>
+                        <td data-label="Estado">Pendiente (no usado)</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>No tienes tokens de firma ciega pendientes.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+
+<script>
+    let signatureToken = null;
+    let userPublicKey = null;
+
+    document.getElementById('user_public_key_file').addEventListener('change', function () {
+        const fileName = this.files[0] ? this.files[0].name : 'Seleccionar archivo...';
+        document.getElementById('file-name-display').textContent = fileName;
+    });
+
+    // Función para leer el archivo de clave pública
+    function readPublicKeyFile(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.onerror = (e) => reject(e);
+            reader.readAsText(file);
+        });
+    }
+
+    // Validar formato PEM básico
+    function validatePEM(pemContent) {
+        return pemContent.includes('-----BEGIN PUBLIC KEY-----') &&
+            pemContent.includes('-----END PUBLIC KEY-----');
+    }
+
+    // --- LISTENER BOTÓN 1: Solicitar Token ---
+    document.getElementById('request-token-btn').addEventListener('click', async () => {
+        const voteOption = document.getElementById('vote_option').value;
+        const statusMessage = document.getElementById('status-message');
+        const publicKeyFile = document.getElementById('user_public_key_file').files[0];
+
+        // Mostrar el cuadro de estado
+        statusMessage.style.display = 'block';
+
+        if (!publicKeyFile) {
+            statusMessage.textContent = 'Por favor, selecciona tu archivo de clave pública (.pem)';
+            statusMessage.className = 'status-box error';
+            return;
+        }
+
+        let userPublicKeyPem;
+        try {
+            userPublicKeyPem = await readPublicKeyFile(publicKeyFile);
+            if (!validatePEM(userPublicKeyPem)) {
+                statusMessage.textContent = 'El archivo no parece ser una clave pública válida en formato PEM';
+                statusMessage.className = 'status-box error';
+                return;
+            }
+        } catch (error) {
+            statusMessage.textContent = 'Error al leer el archivo de clave pública';
+            statusMessage.className = 'status-box error';
+            return;
+        }
+
+        statusMessage.textContent = 'Solicitando token de firma ciega...';
+        statusMessage.className = 'status-box info';
+        document.getElementById('request-token-btn').disabled = true;
+        document.getElementById('submit-vote-btn').disabled = true;
+
+        try {
+            const response = await fetch('/request_blind_signature_token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ vote_option: voteOption })
+            });
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                signatureToken = data.signature_token; // Almacenamos el token
+                statusMessage.textContent = data.message + ' Ahora puedes enviar tu voto.';
+                statusMessage.className = 'status-box success';
+                document.getElementById('submit-vote-btn').disabled = false; // Habilitamos el segundo botón
+            } else {
+                statusMessage.textContent = 'Error al solicitar token: ' + data.message;
+                statusMessage.className = 'status-box error';
+            }
+        } catch (error) {
+            statusMessage.textContent = 'Error de conexión: ' + error.message;
+            statusMessage.className = 'status-box error';
+        } finally {
+            document.getElementById('request-token-btn').disabled = false;
+        }
+    });
+
+    // --- LISTENER BOTÓN 2: Enviar Voto ---
+    document.getElementById('submit-vote-btn').addEventListener('click', async () => {
+        const statusMessage = document.getElementById('status-message');
+
+        // Asegurarse de que el cuadro de estado sea visible
+        statusMessage.style.display = 'block';
+
+        if (!signatureToken) {
+            statusMessage.textContent = 'Primero debes solicitar un token de firma ciega.';
+            statusMessage.className = 'status-box error';
+            return;
+        }
+
+        const voteOption = document.getElementById('vote_option').value;
+        const privateKeyPassword = document.getElementById('private_key_password').value;
+        const userPublicKeyFile = document.getElementById('user_public_key_file').files[0];
+
+        if (!privateKeyPassword) {
+            statusMessage.textContent = 'Por favor, introduce la contraseña de tu clave privada.';
+            statusMessage.className = 'status-box error';
+            return;
+        }
+
+        if (!userPublicKeyFile) {
+            statusMessage.textContent = 'Por favor, sube tu llave pública para verificar la firma.';
+            statusMessage.className = 'status-box error';
+            return;
+        }
+
+        statusMessage.textContent = 'Enviando voto final...';
+        statusMessage.className = 'status-box info';
+        document.getElementById('request-token-btn').disabled = true;
+        document.getElementById('submit-vote-btn').disabled = true;
+
+        let userPublicKeyPem;
+        try {
+            userPublicKeyPem = await readPublicKeyFile(userPublicKeyFile);
+            if (!validatePEM(userPublicKeyPem)) {
+                throw new Error('El archivo no parece ser una clave pública válida en formato PEM');
+            }
+        } catch (error) {
+            statusMessage.textContent = 'Error al leer la clave pública: ' + error.message;
+            statusMessage.className = 'status-box error';
+            document.getElementById('request-token-btn').disabled = false;
+            document.getElementById('submit-vote-btn').disabled = false;
+            return;
+        }
+
+        // Hacemos una llamada fetch con TODOS los datos
+        try {
+            const response = await fetch('/submit_vote', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    vote_option: voteOption,
+                    signature_token: signatureToken,
+                    private_key_password: privateKeyPassword,
+                    user_public_key_pem: userPublicKeyPem // Enviamos el contenido PEM
+                })
+            });
+
+            const data = await response.json();
+
+            if (data.status === 'success') {
+                statusMessage.textContent = data.message;
+                statusMessage.className = 'status-box success';
+                signatureToken = null; // Limpiar el token después de usarlo
+                // Recargar la página para ver los votos actualizados
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500); // Recargar después de 1.5 segundos
+            } else {
+                statusMessage.textContent = 'Error al enviar voto: ' + data.message;
+                statusMessage.className = 'status-box error';
+            }
+        } catch (error) {
+            statusMessage.textContent = 'Error de conexión: ' + error.message;
+            statusMessage.className = 'status-box error';
+        } finally {
+            if (statusMessage.className.includes('error')) {
+                // Solo re-habilitar si hubo un error, si fue exitoso, recargará
+                document.getElementById('request-token-btn').disabled = false;
+                document.getElementById('submit-vote-btn').disabled = false;
+            }
+        }
+    });
+</script>
+
+{% endblock content %}

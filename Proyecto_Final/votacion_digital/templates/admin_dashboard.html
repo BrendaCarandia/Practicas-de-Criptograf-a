@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Título Principal del Dashboard -->
+<h2 class="dashboard-main-title">Panel de Administrador</h2>
+<p class="dashboard-subtitle">¡Bienvenido, {{ current_user.username }}! Aquí puedes ver las estadísticas de las
+    votaciones.</p>
+
+<div class="dashboard-grid">
+
+    <!-- Tarjeta Principal: Estadísticas de Votación -->
+    <div class="dashboard-card">
+        <h3>Estadísticas de Votación</h3>
+        {% if total_votes > 0 %}
+        <p>Total de votos emitidos: <strong>{{ total_votes }}</strong></p>
+
+        <div class="table-wrapper">
+            <table class="modern-table">
+                <thead>
+                    <tr>
+                        <th>Opción de Voto</th>
+                        <th>Número de Votos</th>
+                        <th>Porcentaje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for stat in statistics %}
+                    <tr>
+                        <td data-label="Opción">{{ stat.option }}</td>
+                        <td data-label="Votos">{{ stat.count }}</td>
+                        <td data-label="Porcentaje">{{ ((stat.count / total_votes) * 100) | round(2) }}%</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p>Aún no se han emitido votos.</p>
+        {% endif %}
+    </div>
+
+    <!-- Tarjeta Secundaria: Información de Administrador -->
+    <div class="dashboard-card info-card">
+        <h3>Información de Administrador</h3>
+        <div class="info-grid">
+            <span>Usuario:</span>
+            <strong>{{ current_user.username }}</strong>
+
+            <span>ID de Usuario:</span>
+            <strong>{{ current_user.id }}</strong>
+
+            <span>Tipo de Usuario:</span>
+            <strong>{{ current_user.user_type }}</strong>
+        </div>
+
+    </div>
+
+    {% if statistics and total_votes > 0 %}
+    <div class="dashboard-card winning-card">
+        <h3>🏆 Resultados Parciales</h3>
+        <div class="winner-info">
+            <span class="winner-label">Candidato a la delantera:</span>
+            <strong class="winner-name">{{ statistics[0].option }}</strong>
+            <span class="winner-votes">{{ statistics[0].count }} Votos</span>
+
+            <!-- Barra de Progreso del Ganador -->
+            <div class="winner-percentage-bar">
+                <div class="winner-percentage-fill animated-fill"
+                    style="--percentage-width: {{ ((statistics[0].count / total_votes) * 100) | round(2) }}%; width: var(--percentage-width);">
+
+                    {{ ((statistics[0].count / total_votes) * 100) | round(2) }}%
+                </div>
+            </div>
+        </div>
+
+        <!-- Mostrar el segundo lugar si existe -->
+        {% if statistics[1] %}
+        <div class="runner-up-info">
+            <span class="runner-up-label">Segundo lugar:</span>
+            <div>
+                <strong class="runner-up-name">{{ statistics[1].option }}</strong>
+                <span class="runner-up-votes">({{ statistics[1].count }} Votos)</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock content %}
