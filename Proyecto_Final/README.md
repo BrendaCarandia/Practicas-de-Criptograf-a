@@ -113,6 +113,11 @@ source venv/bin/activate
 ```bash
 pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF cryptography
 ```
+**Segunda opción:** Puedes utilizar también esta opción para instalar las librerías
+
+```bash
+pip install -r requirements.txt
+```
 
 **Verificación:** 
 
@@ -187,7 +192,8 @@ venv\Scripts\activate.bat
 ```bash
 pip install Flask Flask-SQLAlchemy Flask-Login Flask-WTF cryptography
 ```
-o 
+**Segunda opción:** Puedes utilizar también esta opción para instalar las librerías
+
 ```bash
 pip install -r requirements.txt
 ```
