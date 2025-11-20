@@ -233,7 +233,23 @@ python app.py
 
 &nbsp;
 
-### 3. Versiones de paquetes
+## Acceso al sistema
+Una vez que el servidor esté ejecutándose, abre tu navegador web  e ingresa a la siguiente dirección, o simplemente da clic en ella desde la terminal:
+
+```bash
+http://127.0.0.1:5000
+```
+
+Esto abrirá la página principal de la plataforma de votación.
+Desde allí, podrás acceder con tu cuenta existente o registrarte como un nuevo usuario, seleccionando el rol correspondiente ("convencional" o "administrador").
+
+#### Nota: El sistema se encarga de gestionar la base de datos automáticamente; cualquier registro o voto realizado se guardará de forma segura e inmediata.
+
+&nbsp;
+&nbsp;
+
+---
+## Versiones de paquetes
 Al momento de ejecutar el programa se cuentan con las siguiente versiones
 
 | Package | Versión |
